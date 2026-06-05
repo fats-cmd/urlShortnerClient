@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { type LoginForm } from "../../types/Auth";
@@ -11,7 +11,7 @@ import { EyeIcon } from "../../components/EyeIcon";
 const Login = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login } = useAuth();
+    const { login, user } = useAuth();
 
     const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/dashboard";
 
@@ -19,6 +19,14 @@ const Login = () => {
     const [showPwd, setShowPwd] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [shouldNavigate, setShouldNavigate] = useState(false);
+
+    // Navigate after user state is set
+    useEffect(() => {
+        if (shouldNavigate && user) {
+            navigate(from, { replace: true });
+        }
+    }, [shouldNavigate, user, navigate, from]);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -37,13 +45,22 @@ const Login = () => {
         setError("");
 
         try {
-            await login(form);
-            navigate(from, { replace: true });
+            console.log("[Login] Attempting login with email:", form.email);
+            const result = await login(form);
+            console.log("[Login] Login successful, user:", result.user);
+            // Set flag to trigger navigation once user state updates
+            setShouldNavigate(true);
         } catch (err: unknown) {
+            console.error("[Login] Error occurred:", err);
             const axiosError = err as {
                 response?: { data?: { message?: string; error?: string } };
+                message?: string;
             };
-            const msg = axiosError.response?.data?.message || axiosError.response?.data?.error || "Login failed. Check your credentials.";
+            const msg = axiosError.response?.data?.message || 
+                       axiosError.response?.data?.error || 
+                       axiosError.message ||
+                       "Login failed. Check your credentials.";
+            console.error("[Login] Error message:", msg);
             setError(msg);
         } finally {
             setLoading(false);

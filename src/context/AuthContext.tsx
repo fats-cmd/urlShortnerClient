@@ -39,11 +39,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const verifySession = async () => {
             try {
+                // Only attempt refresh if we have a stored token
+                const { getAccessToken } = await import("../api/auth/tokenStorage");
+                const token = getAccessToken();
+                
+                if (!token) {
+                    setIsLoading(false);
+                    return;
+                }
+
                 await refreshAuth();
                 const data = await meRequest();
                 if (!cancelled) {
                     const resolvedUser: User = data.user ?? data;
-
                     setUser(resolvedUser);
                 }
             } catch {
@@ -66,8 +74,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const login = useCallback(
         async (loginDetails: LoginCredentials): Promise<AuthResponse> => {
             const data = await loginRequest(loginDetails);
+            console.log("[AuthContext] Login - setting user:", data.user);
             setUser(data.user ?? null);
-
             return data;
         },
         [],
@@ -77,9 +85,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const signup = useCallback(
         async (signupDetails: SignupCredentials): Promise<AuthResponse> => {
             const data = await signupRequest(signupDetails);
-
+            console.log("[AuthContext] Signup - setting user:", data.user);
             setUser(data.user ?? null);
-
             return data;
         },
         [],

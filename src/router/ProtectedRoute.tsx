@@ -20,6 +20,7 @@ const ProtectedRoute = () => {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
+    // Authenticated — render nested routes
     return <Outlet />;
 };
 

@@ -1,4 +1,4 @@
-import { useState, useMemo, type ChangeEvent, type FormEvent } from "react";
+import { useState, useEffect, useMemo, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
@@ -14,7 +14,7 @@ import { validateSignupForm } from "../../utils/utils";
 
 const Signup = () => {
     const navigate = useNavigate();
-    const { signup } = useAuth();
+    const { signup, user } = useAuth();
 
     const [form, setForm] = useState<SignupForm>({
         username: "",
@@ -22,6 +22,15 @@ const Signup = () => {
         password: "",
         confirm: "",
     });
+    const [shouldNavigate, setShouldNavigate] = useState(false);
+    const [emailForVerification, setEmailForVerification] = useState("");
+
+    // Navigate to verification page after signup succeeds
+    useEffect(() => {
+        if (shouldNavigate && user) {
+            navigate(`/verify-email?email=${encodeURIComponent(emailForVerification)}`, { replace: true });
+        }
+    }, [shouldNavigate, user, navigate, emailForVerification]);
     const [showPwd, setShowPwd] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -60,7 +69,8 @@ const Signup = () => {
                 confirm: form.confirm,
                 role: "user",
             } as SignupCredentials);
-            navigate("/dashboard", { replace: true });
+            setEmailForVerification(form.email);
+            setShouldNavigate(true);
         } catch (err: unknown) {
             const axiosError = err as {
                 response?: { data?: { message?: string; error?: string } };

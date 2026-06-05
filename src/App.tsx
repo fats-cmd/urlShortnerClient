@@ -4,13 +4,11 @@ import ProtectedRoute from "./router/ProtectedRoute";
 
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import VerifyEmail from "./pages/auth/VerifyEmail";
+import VerifySuccess from "./pages/auth/VerifySuccess";
+import Home from "./pages/Home";
 
 // Placeholders — replaced in subsequent batches
-const Home = () => (
-    <div style={{ padding: "2rem", fontFamily: "var(--font-body)" }}>
-        🏠 Home Dashboard — Batch 2
-    </div>
-);
 const LinkDetail = () => (
     <div style={{ padding: "2rem", fontFamily: "var(--font-body)" }}>
         🔗 Link Detail — Batch 3
@@ -41,6 +39,8 @@ function App() {
                     <Route path="/signup" element={<Signup />} />
 
                     <Route element={<ProtectedRoute />}>
+                        <Route path="/verify-email" element={<VerifyEmail />} />
+                        <Route path="/verify-success" element={<VerifySuccess />} />
                         <Route path="/dashboard" element={<Home />} />
                         <Route path="/links/create" element={<CreateLink />} />
                         <Route path="/links/:id" element={<LinkDetail />} />
