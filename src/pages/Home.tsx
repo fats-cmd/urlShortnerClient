@@ -1,15 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageWrapper from "../components/shared/PageWrapper";
 import LinkCard from "../components/LinkCard";
-import type { ShortLink } from "../types/Types";
+import type { LinkSort, ShortLink } from "../types/Types";
 import type { PaginatedResponse } from "../types/Api";
-import api from "../api/axios";
+import { listLinks } from "../api/services/linksService";
+import { useAsync } from "../hooks/useAsync";
 
-type SortOption = "newest" | "oldest" | "most_clicks";
 type FilterOption = "all" | "active" | "expired" | "disabled";
 
-const SORT_LABELS: Record<SortOption, string> = {
+const SORT_LABELS: Record<LinkSort, string> = {
     newest: "Newest first",
     oldest: "Oldest first",
     most_clicks: "Most clicks",
@@ -18,45 +18,25 @@ const SORT_LABELS: Record<SortOption, string> = {
 const Home = () => {
     const navigate = useNavigate();
 
-    const [links, setLinks] = useState<ShortLink[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState("");
-    const [sort, setSort] = useState<SortOption>("newest");
+    const [sort, setSort] = useState<LinkSort>("newest");
     const [filter, setFilter] = useState<FilterOption>("all");
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalLinks, setTotalLinks] = useState(0);
 
-    const fetchLinks = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const params = new URLSearchParams({
-                page: String(page),
-                limit: "10",
-                sort,
-                ...(filter !== "all" && { status: filter }),
-                ...(search.trim() && { search: search.trim() }),
-            });
+    const {
+        data,
+        loading,
+        error,
+        reload: fetchLinks,
+    } = useAsync<PaginatedResponse<ShortLink>>(
+        () => listLinks({ page, limit: 10, sort, status: filter, search }),
+        [page, sort, filter, search],
+        "Failed to load links. Please try again.",
+    );
 
-            const { data } = await api.get<PaginatedResponse<ShortLink>>(
-                `/links?${params.toString()}`,
-            );
-
-            setLinks(data.data);
-            setTotalPages(data.totalPages);
-            setTotalLinks(data.total);
-        } catch {
-            setError("Failed to load links. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    }, [page, sort, filter, search]);
-
-    useEffect(() => {
-        fetchLinks();
-    }, [fetchLinks]);
+    const links = data?.data ?? [];
+    const totalPages = data?.totalPages ?? 1;
+    const totalLinks = data?.total ?? 0;
 
     // Reset to page 1 when filters change
     const handleSearch = (value: string) => {
@@ -69,7 +49,7 @@ const Home = () => {
         setPage(1);
     };
 
-    const handleSort = (value: SortOption) => {
+    const handleSort = (value: LinkSort) => {
         setSort(value);
         setPage(1);
     };
@@ -150,10 +130,10 @@ const Home = () => {
                     {/* Sort */}
                     <select
                         value={sort}
-                        onChange={(e) => handleSort(e.target.value as SortOption)}
+                        onChange={(e) => handleSort(e.target.value as LinkSort)}
                         className="input-base"
                         style={{ maxWidth: 160, fontSize: '0.875rem' }}>
-                        {(Object.keys(SORT_LABELS) as SortOption[]).map(
+                        {(Object.keys(SORT_LABELS) as LinkSort[]).map(
                             (key) => (
                                 <option key={key} value={key}>
                                     {SORT_LABELS[key]}

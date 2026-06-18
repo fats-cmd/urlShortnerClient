@@ -4,10 +4,12 @@ export type Role = "admin" | "user";
 
 export interface AuthResponse {
     accessToken: string;
-    refreshToken: string;
-    role: Role;
+    refreshToken?: string;
+    role?: Role;
     user?: User;
-    expiresIn: number | null;
+    expiresIn?: number | null;
+    message?: string;
+    success?: boolean;
 }
 
 export interface LoginCredentials {
@@ -43,5 +45,5 @@ export interface AuthContextValue {
     login: (credentials: LoginCredentials) => Promise<AuthResponse>;
     signup: (credentials: SignupCredentials) => Promise<AuthResponse>;
     logout: () => Promise<void>;
-    // updateUser: (partial: Partial<User>) => void;
+    updateUser: (partial: Partial<User>) => Promise<void>;
 }

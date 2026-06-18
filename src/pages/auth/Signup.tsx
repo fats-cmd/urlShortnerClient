@@ -48,13 +48,15 @@ const Signup = () => {
         if (error) setError("");
     };
 
-    validateSignupForm(form);
-
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const validationError = validateSignupForm(form);
         if (validationError) {
             setError(validationError);
+            return;
+        }
+        if (!agreed) {
+            setError("Please accept the terms to continue.");
             return;
         }
 

@@ -26,10 +26,10 @@ const LinkCard = ({ link }: Props) => {
     return (
         <div
             onClick={() => navigate(`/links/${link.id}`)}
-            className="bg-white border rounded-md p-4 cursor-pointer transition-shadow duration-150 ease-in-out flex items-center gap-4 hover:shadow-md hover:-translate-y-0.5"
+            className="bg-white border cursor-pointer transition-shadow duration-150 ease-in-out flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:shadow-md hover:-translate-y-0.5"
             style={{ borderColor: 'var(--border-light)', borderRadius: 'var(--radius-md)' }}>
             {/* Icon */}
-            <div className="w-10 h-10 rounded-sm flex items-center justify-center text-base flex-shrink-0" style={{ background: 'var(--bg-muted)', borderRadius: 'var(--radius-sm)' }}>
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-sm flex items-center justify-center text-base flex-shrink-0" style={{ background: 'var(--bg-muted)', borderRadius: 'var(--radius-sm)' }}>
                 🔗
             </div>
 
@@ -38,16 +38,20 @@ const LinkCard = ({ link }: Props) => {
                 <div className="font-semibold text-sm text-[var(--text-dark)] truncate">
                     {link.title ?? link.shortCode}
                 </div>
-                <div className="text-[0.8rem] text-[var(--fern)] font-medium mt-0.5">
+                <div className="text-[0.8rem] text-[var(--fern)] font-medium mt-0.5 truncate">
                     {link.shortUrl}
                 </div>
-                <div className="text-[0.75rem] text-[var(--text-muted)] mt-0.5 truncate">
+                <div className="text-[0.75rem] text-[var(--text-muted)] mt-0.5 truncate hidden sm:block">
                     {link.originalUrl}
+                </div>
+                {/* Inline clicks on mobile (the dedicated column is hidden below sm) */}
+                <div className="text-[0.72rem] text-[var(--text-muted)] mt-0.5 sm:hidden">
+                    {link.totalClicks.toLocaleString()} clicks
                 </div>
             </div>
 
-            {/* Stats */}
-            <div className="flex flex-col items-center flex-shrink-0 min-w-[64px]">
+            {/* Stats (sm and up) */}
+            <div className="hidden sm:flex flex-col items-center flex-shrink-0 min-w-[64px]">
                 <span className="font-display text-[1.3rem] font-extrabold text-[var(--forest)] leading-none">
                     {link.totalClicks.toLocaleString()}
                 </span>
@@ -61,6 +65,7 @@ const LinkCard = ({ link }: Props) => {
             <button
                 onClick={handleCopy}
                 title="Copy short URL"
+                aria-label="Copy short URL"
                 className="px-2 py-1 text-sm rounded-sm border flex-shrink-0"
                 style={{ background: 'var(--bg-muted)', borderColor: 'var(--border-light)', color: 'var(--text-muted)' }}
             >

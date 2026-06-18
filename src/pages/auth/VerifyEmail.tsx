@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import api from "../../api/axios";
+// TEMPORARY: backend unavailable — using localStorage mock auth.
+// import api from "../../api/axios";
+import { mockVerifyEmail, mockResendVerification } from "../../api/auth/mockAuth";
 
 const VerifyEmail = () => {
     const navigate = useNavigate();
@@ -12,24 +14,32 @@ const VerifyEmail = () => {
     const email = searchParams.get("email") || "";
     const verificationToken = searchParams.get("token");
 
-    // Auto-verify if token is present in URL
+    // Auto-verify when a token is present in the URL. State is only touched
+    // after the async call settles, so nothing is set synchronously here.
     useEffect(() => {
-        if (verificationToken) {
-            verifyEmail();
-        }
-    }, [verificationToken]);
+        if (!verificationToken) return;
+        let active = true;
+        // TEMPORARY: mock verification (real call: api.post("/auth/verify-email", …))
+        mockVerifyEmail(verificationToken)
+            .then(() => {
+                if (active) navigate("/verify-success", { replace: true });
+            })
+            .catch(() => {
+                if (active) setError("Verification failed. Please try again.");
+            });
+        return () => {
+            active = false;
+        };
+    }, [verificationToken, navigate]);
 
     const verifyEmail = async () => {
-        if (!verificationToken) {
-            setError("No verification token provided.");
-            return;
-        }
-
         setIsVerifying(true);
         setError("");
 
         try {
-            await api.post("/auth/verify-email", { token: verificationToken });
+            // TEMPORARY: mock verification (real call commented out below)
+            await mockVerifyEmail(verificationToken);
+            // await api.post("/auth/verify-email", { token: verificationToken });
             navigate("/verify-success", { replace: true });
         } catch (err: unknown) {
             const axiosError = err as {
@@ -55,7 +65,9 @@ const VerifyEmail = () => {
         setError("");
 
         try {
-            await api.post("/auth/resend-verification", { email });
+            // TEMPORARY: mock resend (real call commented out below)
+            await mockResendVerification(email);
+            // await api.post("/auth/resend-verification", { email });
             setSent(true);
             setTimeout(() => setSent(false), 3000);
         } catch (err: unknown) {
@@ -124,13 +136,10 @@ const VerifyEmail = () => {
                         <button disabled className="btn-primary w-full">
                             Verifying…
                         </button>
-                    ) : verificationToken ? (
-                        <button onClick={verifyEmail} className="btn-primary w-full">
-                            Verify Email
-                        </button>
                     ) : (
-                        <button onClick={resendEmail} className="btn-primary w-full">
-                            Resend Verification Email
+                        // TEMPORARY: mock auth — always allow continuing to the dashboard.
+                        <button onClick={verifyEmail} className="btn-primary w-full">
+                            Verify Email &amp; Continue
                         </button>
                     )}
 

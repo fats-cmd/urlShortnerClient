@@ -1,23 +1,50 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@400;700&display=swap');
+@import "tailwindcss";
 
+/* ── Design tokens (single source of truth) ───────────────────────────────
+   Palette + fonts live in @theme so Tailwind generates matching utilities
+   (bg-forest, text-sage, font-display, …). The :root aliases below keep the
+   existing `var(--forest)` style references working off the same values. */
+@theme {
+    --font-display: "Playfair Display", Georgia, serif;
+    --font-body: "DM Sans", system-ui, sans-serif;
+
+    /* Earthy Forest palette */
+    --color-linen: #dad7cd;
+    --color-sage: #a3b18a;
+    --color-fern: #588157;
+    --color-forest: #3a5a40;
+    --color-deep: #344e41;
+
+    /* Surfaces & text */
+    --color-bg-main: #f5f3ef;
+    --color-bg-card: #ffffff;
+    --color-bg-muted: #edeae3;
+    --color-text-dark: #1e2d21;
+    --color-text-body: #3d4f3f;
+    --color-text-muted: #7a8c76;
+}
 
 :root {
-    /* Earthy Forest Palette — kept as CSS variables for theming */
-    --linen: #dad7cd;
-    --sage: #a3b18a;
-    --fern: #588157;
-    --forest: #3a5a40;
-    --deep: #344e41;
+    /* Aliases so existing var(--token) references resolve to the @theme palette */
+    --linen: var(--color-linen);
+    --sage: var(--color-sage);
+    --fern: var(--color-fern);
+    --forest: var(--color-forest);
+    --deep: var(--color-deep);
 
-    --bg-main: #f5f3ef;
-    --bg-card: #ffffff;
-    --bg-muted: #edeae3;
-    --text-dark: #1e2d21;
-    --text-body: #3d4f3f;
-    --text-muted: #7a8c76;
-        --radius-sm: 8px;
+    --bg-main: var(--color-bg-main);
+    --bg-card: var(--color-bg-card);
+    --bg-muted: var(--color-bg-muted);
+    --text-dark: var(--color-text-dark);
+    --text-body: var(--color-text-body);
+    --text-muted: var(--color-text-muted);
 
+    /* Borders & radii */
+    --border-light: #e3e0d6;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
 }
 
 html, body, #root { 
@@ -86,6 +113,14 @@ body {
     justify-content: center;
     padding: 3rem 3.5rem;
     background: var(--bg-main);
+}
+
+/* Tighten auth layout on phones / small tablets */
+@media (max-width: 640px) {
+    .auth-panel-right { padding: 1.5rem 1.15rem; }
+    .auth-form-card { padding: 1.5rem; box-shadow: none; }
+    .auth-tagline { font-size: 2rem; }
+    .auth-form-title { font-size: 1.5rem; }
 }
 
 .auth-logo-mark {
@@ -188,6 +223,22 @@ body {
     border-radius: 8px;
     font-size: 0.875rem;
     padding: 0.6rem 1rem;
+}
+
+.alert-success {
+    background: #f0f7f0;
+    border: 1px solid #bcdcb9;
+    color: var(--forest);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    padding: 0.6rem 1rem;
+}
+
+/* Surface card used across dashboard / detail / settings pages */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
 }
 
 .btn-primary {

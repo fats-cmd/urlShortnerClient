@@ -45,6 +45,16 @@ export interface ShortLink {
     editHistory: LinkEdit[];
 }
 
+export type LinkSort = "newest" | "oldest" | "most_clicks";
+
+export interface ListLinksParams {
+    page?: number;
+    limit?: number;
+    sort?: LinkSort;
+    status?: LinkStatus | "all";
+    search?: string;
+}
+
 export interface CreateLinkPayload {
     originalUrl: string;
     title?: string;

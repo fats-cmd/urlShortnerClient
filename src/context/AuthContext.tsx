@@ -13,13 +13,22 @@ import type {
 } from "../types/Auth";
 import type { User } from "../types/User";
 
+// ── TEMPORARY: backend is unavailable, using localStorage mock auth ──────────
+// Restore these real network calls once the backend is running.
+// import {
+//     loginRequest,
+//     logoutRequest,
+//     signupRequest,
+//     meRequest,
+// } from "../api/services/authService";
+// import { refreshAuth } from "../api/auth/refreshAuth";
 import {
-    loginRequest,
-    logoutRequest,
-    signupRequest,
-    meRequest,
-} from "../api/services/authService";
-import { refreshAuth } from "../api/auth/refreshAuth";
+    mockLogin,
+    mockSignup,
+    mockLogout,
+    mockMe,
+    mockUpdateProfile,
+} from "../api/auth/mockAuth";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -37,31 +46,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         let cancelled = false;
 
+        // ── TEMPORARY: mock session restore from localStorage ────────────────
         const verifySession = async () => {
             try {
-                // Only attempt refresh if we have a stored token
-                const { getAccessToken } = await import("../api/auth/tokenStorage");
-                const token = getAccessToken();
-                
-                if (!token) {
-                    setIsLoading(false);
-                    return;
-                }
-
-                await refreshAuth();
-                const data = await meRequest();
-                if (!cancelled) {
-                    const resolvedUser: User = data.user ?? data;
-                    setUser(resolvedUser);
-                }
+                const restored = mockMe();
+                if (!cancelled) setUser(restored);
             } catch {
-                if (!cancelled) {
-                    setUser(null);
-                }
+                if (!cancelled) setUser(null);
             } finally {
                 if (!cancelled) setIsLoading(false);
             }
         };
+
+        // ── Real session restore (restore when backend is available) ─────────
+        // const verifySession = async () => {
+        //     try {
+        //         // Only attempt refresh if we have a stored token
+        //         const { getAccessToken } = await import("../api/auth/tokenStorage");
+        //         const token = getAccessToken();
+        //
+        //         if (!token) {
+        //             setIsLoading(false);
+        //             return;
+        //         }
+        //
+        //         await refreshAuth();
+        //         const data = await meRequest();
+        //         if (!cancelled) {
+        //             const resolvedUser: User = data.user ?? data;
+        //             setUser(resolvedUser);
+        //         }
+        //     } catch {
+        //         if (!cancelled) {
+        //             setUser(null);
+        //         }
+        //     } finally {
+        //         if (!cancelled) setIsLoading(false);
+        //     }
+        // };
 
         verifySession();
 
@@ -73,7 +95,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // ── Login ───────────────────────────────────────────────────────────────
     const login = useCallback(
         async (loginDetails: LoginCredentials): Promise<AuthResponse> => {
-            const data = await loginRequest(loginDetails);
+            // TEMPORARY: mock login (real call commented out below)
+            const data = await mockLogin(loginDetails);
+            // const data = await loginRequest(loginDetails);
             console.log("[AuthContext] Login - setting user:", data.user);
             setUser(data.user ?? null);
             return data;
@@ -84,7 +108,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // ── Signup ──────────────────────────────────────────────────────────────
     const signup = useCallback(
         async (signupDetails: SignupCredentials): Promise<AuthResponse> => {
-            const data = await signupRequest(signupDetails);
+            // TEMPORARY: mock signup (real call commented out below)
+            const data = await mockSignup(signupDetails);
+            // const data = await signupRequest(signupDetails);
             console.log("[AuthContext] Signup - setting user:", data.user);
             setUser(data.user ?? null);
             return data;
@@ -92,9 +118,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         [],
     );
 
+    // ── Update user (e.g. after profile edit) ────────────────────────────────
+    const updateUser = useCallback(
+        async (partial: Partial<User>): Promise<void> => {
+            const updated = await mockUpdateProfile(partial);
+            setUser(updated);
+        },
+        [],
+    );
+
     // ── Logout ──────────────────────────────────────────────────────────────
     const logout = useCallback(async (): Promise<void> => {
-        await logoutRequest();
+        // TEMPORARY: mock logout (real call commented out below)
+        await mockLogout();
+        // await logoutRequest();
         setUser(null);
     }, []);
 
@@ -121,6 +158,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 login,
                 signup,
                 logout,
+                updateUser,
             }}>
             {children}
         </AuthContext.Provider>
